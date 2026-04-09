@@ -1,4 +1,4 @@
-const BASE = `${import.meta.env.VITE_API_URL || 'https://freelancer-backend-xp3g.onrender.com'}/api`;
+const BASE = "https://freelancer-backend-xp3g.onrender.com/api"
 
 const headers = (token, json = true) => ({
     ...(json && { 'Content-Type': 'application/json' }),
