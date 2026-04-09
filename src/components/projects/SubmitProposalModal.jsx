@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Send, CheckCircle, DollarSign, FileText } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { t } from '../../i18n';
+import { submitProposal } from '../../api';
 
 const SubmitProposalModal = ({ isOpen, onClose, projectId, onProposalSubmitted }) => {
     const [formData, setFormData] = useState({ coverLetter: '', bidAmount: '' });
@@ -26,16 +27,8 @@ const SubmitProposalModal = ({ isOpen, onClose, projectId, onProposalSubmitted }
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await fetch(`/api/projects/${projectId}/proposals`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user'))?.token || ''}`
-                },
-                body: JSON.stringify(formData)
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Failed to submit proposal');
+            const token = JSON.parse(localStorage.getItem('user'))?.token || '';
+            const data = await submitProposal(token, projectId, formData);
 
             setSuccess(true);
             toast.success('Proposal submitted successfully!');

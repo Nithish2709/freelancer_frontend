@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { t } from '../../i18n';
+import { updateProfile } from '../../api';
 
 const EditProfileModal = ({ isOpen, onClose, user, onProfileUpdated }) => {
     const [name, setName] = useState('');
@@ -70,21 +71,11 @@ const EditProfileModal = ({ isOpen, onClose, user, onProfileUpdated }) => {
             const token = storedUser ? JSON.parse(storedUser).token : null;
             if (!token) throw new Error('Not authenticated. Please log in again.');
 
-            const res = await fetch('/api/users/profile', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
+            const data = await updateProfile(token, {
                     name, title, bio, skills, tools,
                     phoneNumber, experience, portfolio,
                     companyName, projectInterests
-                })
-            });
-
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Failed to update profile');
+                });
 
             toast.success('Profile updated successfully');
             onProfileUpdated(data);

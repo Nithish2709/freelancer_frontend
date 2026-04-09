@@ -3,6 +3,7 @@ import { User, Bell, Lock, Palette, Save, Eye, EyeOff, Sun, Moon } from 'lucide-
 import { AuthContext } from '../context/AuthContext';
 import { useDarkMode } from '../context/DarkModeContext';
 import { toast } from 'react-hot-toast';
+import { updateProfile } from '../api';
 
 const Section = ({ title, icon: Icon, children }) => (
     <div className="rounded-2xl border shadow-sm overflow-hidden"
@@ -51,16 +52,7 @@ const Settings = () => {
         e.preventDefault();
         setSavingProfile(true);
         try {
-            const res  = await fetch('/api/users/profile', {
-                method:  'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization:  `Bearer ${authUser.token}`,
-                },
-                body: JSON.stringify(profile),
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Failed to update profile');
+            const data = await updateProfile(authUser.token, profile);
             updateUser({ ...data, token: authUser.token });
             toast.success('Profile updated successfully!');
         } catch (err) {
@@ -82,16 +74,7 @@ const Settings = () => {
         }
         setSavingPassword(true);
         try {
-            const res  = await fetch('/api/users/profile', {
-                method:  'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization:  `Bearer ${authUser.token}`,
-                },
-                body: JSON.stringify({ password: passwords.newPwd }),
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Failed to update password');
+            const data = await updateProfile(authUser.token, { password: passwords.newPwd });
             setPasswords({ current: '', newPwd: '', confirm: '' });
             toast.success('Password updated successfully!');
         } catch (err) {

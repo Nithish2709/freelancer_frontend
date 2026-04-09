@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
+import { loginUser } from '../api';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -13,15 +14,7 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Login failed');
-
-            // Set user in context and local storage
+            const data = await loginUser({ email, password });
             login(data);
 
             toast.success('Logged in successfully!');

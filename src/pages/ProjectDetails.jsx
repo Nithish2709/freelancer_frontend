@@ -4,6 +4,7 @@ import { Clock, DollarSign, Calendar, MapPin, CheckCircle, ArrowLeft } from 'luc
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import SubmitProposalModal from '../components/projects/SubmitProposalModal';
+import { getProjectById, acceptProposal, assignProject } from '../api';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -24,9 +25,7 @@ const ProjectDetails = () => {
                 return;
             }
             try {
-                const res = await fetch(`/api/projects/${encodeURIComponent(id)}`);
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message || 'Failed to fetch project');
+                const data = await getProjectById(id);
                 setProject(data);
             } catch (err) {
                 toast.error(err.message);
@@ -58,13 +57,8 @@ const ProjectDetails = () => {
         if (!window.confirm('Accept this proposal? This will complete the project.')) return;
         if (!UUID_REGEX.test(proposalId)) { toast.error('Invalid proposal ID'); return; }
         try {
-            const res = await fetch(`/api/projects/${encodeURIComponent(id)}/proposals/${encodeURIComponent(proposalId)}/accept`, {
-                method: 'PUT',
-                headers: { 'Authorization': `Bearer ${user.token}` }
-            });
-            const data = await res.json();
-            if (res.ok) { toast.success('Proposal accepted!'); setProject(data.project); }
-            else toast.error(data.message || 'Failed to accept proposal');
+            const data = await acceptProposal(user.token, id, proposalId);
+            toast.success('Proposal accepted!'); setProject(data.project);
         } catch { toast.error('An error occurred'); }
     };
 
@@ -72,14 +66,8 @@ const ProjectDetails = () => {
         if (!window.confirm('Assign this job to the freelancer?')) return;
         if (!UUID_REGEX.test(freelancerId)) { toast.error('Invalid freelancer ID'); return; }
         try {
-            const res = await fetch(`/api/projects/${encodeURIComponent(id)}/assign`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` },
-                body: JSON.stringify({ freelancerId })
-            });
-            const data = await res.json();
-            if (res.ok) { toast.success('Job assigned!'); setProject(data); }
-            else toast.error(data.message || 'Failed to assign job');
+            const data = await assignProject(user.token, id, { freelancerId });
+            toast.success('Job assigned!'); setProject(data);
         } catch { toast.error('An error occurred'); }
     };
 

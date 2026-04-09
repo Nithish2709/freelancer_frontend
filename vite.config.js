@@ -7,7 +7,7 @@ export default defineConfig({
     ],
     server: {
         proxy: {
-            '/api': 'http://localhost:5000'
+            '/api': 'https://freelancer-backend-xp3g.onrender.com'
         }
     },
     test: {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Bell, Briefcase, MessageSquare, UserCheck, X } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { getProjects, getProfile } from '../../api';
 
 const TYPE_ICON = {
     job:        { icon: Briefcase,    color: 'bg-sky-100 text-sky-600' },
@@ -23,12 +24,10 @@ const NotificationBell = () => {
         if (!user) return;
         const fetch_ = async () => {
             try {
-                const [projRes, profileRes] = await Promise.all([
-                    fetch('/api/projects', { headers: { Authorization: `Bearer ${user.token}` } }),
-                    fetch('/api/users/profile', { headers: { Authorization: `Bearer ${user.token}` } }),
+                const [projects, profile] = await Promise.all([
+                    getProjects(user.token),
+                    getProfile(user.token),
                 ]);
-                const projects = projRes.ok ? await projRes.json() : [];
-                const profile  = profileRes.ok ? await profileRes.json() : {};
                 const uid = user._id || user.id;
 
                 const notifs = [];

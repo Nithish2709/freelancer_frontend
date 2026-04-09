@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import FreelancerCard from '../components/common/FreelancerCard';
+import { getFreelancers } from '../api';
 
 const SKILL_FILTERS = ['All', 'React', 'Node.js', 'Python', 'Design', 'Writing', 'Marketing'];
 
@@ -36,9 +37,7 @@ const Freelancers = () => {
     useEffect(() => {
         const fetchFreelancers = async () => {
             try {
-                const res = await fetch('/api/users/freelancers');
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message || 'Failed to fetch freelancers');
+                const data = await getFreelancers();
                 setFreelancers(Array.isArray(data) ? data : []);
             } catch (err) {
                 setError(err.message);

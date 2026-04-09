@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 import { CheckCircle, Circle, User, Briefcase, BookOpen, Globe, Image, ChevronRight, ChevronLeft, Plus, X } from 'lucide-react';
+import { updateProfile } from '../api';
 
 // ── Section definitions ──────────────────────────────────────────────────────
 const FREELANCER_SECTIONS = [
@@ -111,14 +112,7 @@ const ProfileCompletion = () => {
             const token = user?.token;
             if (!token) throw new Error('Not authenticated');
 
-            const res = await fetch('/api/users/profile', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify(form)
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Failed to save');
-
+            const data = await updateProfile(token, form);
             updateUser({ ...data, token });
 
             if (data.profileComplete) {

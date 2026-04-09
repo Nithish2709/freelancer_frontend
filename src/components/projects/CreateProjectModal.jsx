@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { t } from '../../i18n';
+import { createProject } from '../../api';
 
 const CreateProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
     const [formData, setFormData] = useState({
@@ -23,20 +24,11 @@ const CreateProjectModal = ({ isOpen, onClose, onProjectCreated }) => {
             const token = JSON.parse(localStorage.getItem('user'))?.token;
             if (!token) throw new Error('Not authenticated');
 
-            const res = await fetch('/api/projects', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
+            const data = await createProject(token, {
                     ...formData,
                     budget: Number(formData.budget),
                     skillsRequired: skillsArray
-                })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Failed to create project');
+                });
 
             toast.success('Project created successfully!');
             onProjectCreated(data);

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { X, Briefcase, CheckCircle, Loader } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { toast } from 'react-hot-toast';
+import { getProjects, assignProject } from '../../api';
 
 const HireModal = ({ isOpen, onClose, freelancer }) => {
     const { user: authUser } = useContext(AuthContext);
@@ -18,10 +19,7 @@ const HireModal = ({ isOpen, onClose, freelancer }) => {
         const fetchProjects = async () => {
             setFetching(true);
             try {
-                const res  = await fetch('/api/projects');
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message);
-                // Only show client's own open projects
+                const data = await getProjects();
                 const mine = (Array.isArray(data) ? data : []).filter(p =>
                     (p.client?.id === uid || p.client?._id === uid || p.client === uid) &&
                     p.status === 'open'
@@ -42,16 +40,7 @@ const HireModal = ({ isOpen, onClose, freelancer }) => {
         if (!selected) { toast.error('Please select a project first'); return; }
         setLoading(true);
         try {
-            const res  = await fetch(`/api/projects/${selected}/assign`, {
-                method:  'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization:  `Bearer ${authUser.token}`
-                },
-                body: JSON.stringify({ freelancerId: freelancer.id || freelancer._id })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Failed to hire freelancer');
+            const data = await assignProject(authUser.token, selected, { freelancerId: freelancer.id || freelancer._id });
             setSuccess(true);
             toast.success(`${freelancer.name} has been hired successfully!`);
             setTimeout(onClose, 1800);

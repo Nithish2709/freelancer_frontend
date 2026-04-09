@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, SlidersHorizontal, Briefcase } from 'lucide-react';
 import ProjectCard from '../components/common/ProjectCard';
+import { getProjects } from '../api';
 
 const CATEGORIES = ['All', 'Development', 'Design', 'Writing', 'Marketing'];
 const BUDGETS = [
@@ -42,9 +43,7 @@ const Projects = () => {
     useEffect(() => {
         const fetchProjects = async () => {
             try {
-                const res = await fetch('/api/projects');
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message || 'Failed to fetch projects');
+                const data = await getProjects();
                 setProjects(Array.isArray(data) ? data : []);
             } catch (err) {
                 setError(err.message);

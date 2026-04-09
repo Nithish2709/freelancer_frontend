@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
+import { registerUser } from '../api';
 
 const Register = () => {
     const [userType, setUserType] = useState('freelancer');
@@ -19,14 +20,7 @@ const Register = () => {
             return;
         }
         try {
-            const res = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: formData.name, email: formData.email, password: formData.password, role: userType })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Registration failed');
-
+            const data = await registerUser({ name: formData.name, email: formData.email, password: formData.password, role: userType });
             login(data);
             toast.success('Account created! Complete your profile to get started.');
             navigate('/complete-profile');

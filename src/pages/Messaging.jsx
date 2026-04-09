@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Send, MessageSquare, ArrowLeft, Search } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
+import { getInbox, getConversation, sendMessage } from '../api';
 
 const Messaging = () => {
     const { userId } = useParams();           // optional — open a specific convo
@@ -27,11 +28,7 @@ const Messaging = () => {
         if (!token) return;
         const fetchInbox = async () => {
             try {
-                const res  = await fetch('/api/messages', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message);
+                const data = await getInbox(token);
                 setConversations(Array.isArray(data) ? data : []);
             } catch (err) {
                 toast.error('Failed to load inbox: ' + err.message);
@@ -55,11 +52,7 @@ const Messaging = () => {
     const openConversation = async (otherUserId) => {
         setLoadingMsgs(true);
         try {
-            const res  = await fetch(`/api/messages/${otherUserId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message);
+            const data = await getConversation(token, otherUserId);
             setActiveConvo(data.otherUser);
             setMessages(data.messages || []);
             // Update unread count in sidebar
@@ -79,16 +72,7 @@ const Messaging = () => {
         if (!newMsg.trim() || !activeConvo) return;
         setSending(true);
         try {
-            const res  = await fetch(`/api/messages/${activeConvo.id}`, {
-                method:  'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization:  `Bearer ${token}`
-                },
-                body: JSON.stringify({ content: newMsg.trim() })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message);
+            const data = await sendMessage(token, activeConvo.id, { content: newMsg.trim() });
             setMessages(prev => [...prev, data]);
             setNewMsg('');
             // Bump last message in sidebar

@@ -5,6 +5,7 @@ import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import EditProfileModal from '../components/common/EditProfileModal';
 import HireModal from '../components/common/HireModal';
+import { getUserById } from '../api';
 
 const FreelancerProfile = () => {
     const { id } = useParams();
@@ -18,9 +19,7 @@ const FreelancerProfile = () => {
     useEffect(() => {
         const fetchFreelancer = async () => {
             try {
-                const res = await fetch(`/api/users/${id}`);
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message || 'Failed to fetch profile');
+                const data = await getUserById(id);
                 setFreelancer(data);
             } catch (err) {
                 toast.error(err.message);

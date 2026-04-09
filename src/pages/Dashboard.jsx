@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import CreateProjectModal from '../components/projects/CreateProjectModal';
 import { toast } from 'react-hot-toast';
+import { getProfile, getProjects, updateProjectStatus } from '../api';
 
 const STATUS_TABS = ['All', 'Active', 'Completed', 'Pending'];
 
@@ -33,25 +34,21 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const [profileRes, projectsRes] = await Promise.all([
-                    fetch('/api/users/profile', { headers: { 'Authorization': `Bearer ${authUser.token}` } }),
-                    fetch('/api/projects'),
+                const [profileData, projectsData] = await Promise.all([
+                    getProfile(authUser.token),
+                    getProjects(),
                 ]);
-                const profileData = await profileRes.json();
-                if (profileRes.ok) setUserStats(profileData);
+                setUserStats(profileData);
 
-                const projectsData = await projectsRes.json();
-                if (projectsRes.ok) {
-                    const userProjects = Array.isArray(projectsData)
-                        ? projectsData.filter(p =>
-                            p.client?.id === uid || p.client?._id === uid || p.client === uid ||
-                            p.proposals?.some(prop =>
-                                prop.freelancer?.id === uid || prop.freelancer?._id === uid || prop.freelancer === uid
-                            )
+                const userProjects = Array.isArray(projectsData)
+                    ? projectsData.filter(p =>
+                        p.client?.id === uid || p.client?._id === uid || p.client === uid ||
+                        p.proposals?.some(prop =>
+                            prop.freelancer?.id === uid || prop.freelancer?._id === uid || prop.freelancer === uid
                         )
-                        : [];
-                    setProjects(userProjects);
-                }
+                    )
+                    : [];
+                setProjects(userProjects);
             } catch (err) {
                 console.error('Dashboard fetch error:', err);
             } finally {
@@ -69,16 +66,7 @@ const Dashboard = () => {
     const handleStatusUpdate = async (projectId, newStatus) => {
         setUpdatingId(projectId);
         try {
-            const res = await fetch(`/api/projects/${projectId}/status`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${authUser.token}`,
-                },
-                body: JSON.stringify({ status: newStatus }),
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Failed to update status');
+            const data = await updateProjectStatus(authUser.token, projectId, newStatus);
             setProjects(prev =>
                 prev.map(p => (p.id || p._id) === projectId ? { ...p, status: newStatus } : p)
             );
